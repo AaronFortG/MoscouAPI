@@ -1,0 +1,6 @@
+FastAPI
+sqlalchemy
+python_dotenv
+asyncpg
+psycopg2-binary
+uvicorn

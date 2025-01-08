@@ -4,6 +4,7 @@ from app.models.ticket import Ticket
 from app.schemas.ticket import TicketCreate, TicketValidate
 from app.database import get_db
 from sqlalchemy.sql import func
+from sqlalchemy.sql import text
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ async def create_ticket(ticket: TicketCreate, db: AsyncSession = Depends(get_db)
 
 @router.post("/validate", response_model=dict)
 async def validate_ticket(ticket: TicketValidate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute("SELECT * FROM tickets WHERE ticket_id = :ticket_id", {"ticket_id": ticket.ticket_id})
+    result = await db.execute(text("SELECT * FROM tickets WHERE ticket_id = :ticket_id"), {"ticket_id": ticket.ticket_id})
     ticket_to_validate = result.scalar_one_or_none()
 
     if not ticket_to_validate:

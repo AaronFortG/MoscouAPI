@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.event import Event
 from app.schemas.event import EventCreate
 from app.database import get_db
+from sqlalchemy.sql import text
 
 router = APIRouter()
 
 @router.get("/")
 async def get_events(db: AsyncSession = Depends(get_db)):
-    result = await db.execute("SELECT * FROM events")
+    result = await db.execute(text("SELECT * FROM events"))
     return result.mappings().all()
 
 @router.post("/")

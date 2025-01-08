@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from app.database import Base
+from sqlalchemy.sql import func
 
 class Ticket(Base):
     __tablename__ = "tickets"
