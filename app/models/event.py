@@ -8,5 +8,5 @@ class Event(Base):
     name = Column(String(255), nullable=False)
     price = Column(Float, nullable=False)
     image_url = Column(String, nullable=True)
-    event_date = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=func.now())
+    event_date = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default="CURRENT_TIMESTAMP")
