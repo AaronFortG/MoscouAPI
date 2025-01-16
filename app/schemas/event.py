@@ -2,9 +2,10 @@ from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional
 
-class EventCreate(BaseModel):
+class Event(BaseModel):
     name: str
     price: float
+    description: Optional[str] = None
     image_url: Optional[str] = None
     event_date: datetime
 

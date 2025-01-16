@@ -1,25 +1,28 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, literal
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.event import Event
-from app.schemas.event import EventCreate
+from app.schemas.event import Event
 from app.database import get_db
 from sqlalchemy.sql import text
 
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_model=List[Event])
 async def get_events(db: AsyncSession = Depends(get_db)):
     result = await db.execute(text("SELECT * FROM events"))
     return result.mappings().all()
 
 
 @router.post("/")
-async def create_event(event: EventCreate, db: AsyncSession = Depends(get_db)):
+async def create_event(event: Event, db: AsyncSession = Depends(get_db)):
     new_event = Event(
         name=event.name,
         price=event.price,
+        description=event.description,
         image_url=event.image_url,
         event_date=event.event_date
     )
