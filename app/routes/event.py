@@ -3,23 +3,23 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, literal
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.event import Event
-from app.schemas.event import Event
+from app.models.event import EventModel
+from app.schemas.eventschema import EventSchema
 from app.database import get_db
 from sqlalchemy.sql import text
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Event])
+@router.get("/", response_model=List[EventSchema])
 async def get_events(db: AsyncSession = Depends(get_db)):
     result = await db.execute(text("SELECT * FROM events"))
     return result.mappings().all()
 
 
 @router.post("/")
-async def create_event(event: Event, db: AsyncSession = Depends(get_db)):
-    new_event = Event(
+async def create_event(event: EventSchema, db: AsyncSession = Depends(get_db)):
+    new_event = EventModel(
         name=event.name,
         price=event.price,
         description=event.description,
@@ -35,6 +35,6 @@ async def create_event(event: Event, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-async def event_exists(db: AsyncSession, event_id: int) -> Event:
-    result = await db.execute(select(Event).where(Event.event_id == event_id))
+async def event_exists(db: AsyncSession, event_id: int) -> EventSchema:
+    result = await db.execute(select(EventModel).where(EventModel.event_id == event_id))
     return result.scalar_one_or_none()

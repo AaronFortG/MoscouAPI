@@ -2,7 +2,8 @@ from datetime import datetime
 from pydantic import BaseModel, validator
 from typing import Optional
 
-class Event(BaseModel):
+
+class EventSchema(BaseModel):
     name: str
     price: float
     description: Optional[str] = None
