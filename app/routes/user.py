@@ -11,7 +11,7 @@ from sqlalchemy.future import select
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_model=List[UserResponse])
 async def get_users(db: AsyncSession = Depends(get_db)):
     result = await db.execute(text("SELECT * FROM users"))
     return result.mappings().all()
