@@ -1,7 +1,9 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
-from app.schemas.user import UserCreate
+from app.schemas.user import UserResponse
 from app.database import get_db
 from sqlalchemy import text
 from sqlalchemy.future import select
@@ -15,8 +17,8 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     return result.mappings().all()
 
 
-@router.post("/", response_model=dict)
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+@router.post("/", response_model=List[UserResponse])
+async def create_user(user: UserResponse, db: AsyncSession = Depends(get_db)):
     # Check if user already exists
     if await user_exists(db, user.firebase_uid):
         raise HTTPException(status_code=400, detail="User already exists.")
