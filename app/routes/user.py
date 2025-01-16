@@ -17,7 +17,7 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     return result.mappings().all()
 
 
-@router.post("/", response_model=List[UserResponse])
+@router.post("/")
 async def create_user(user: UserResponse, db: AsyncSession = Depends(get_db)):
     # Check if user already exists
     if await user_exists(db, user.firebase_uid):
