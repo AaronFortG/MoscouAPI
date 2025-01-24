@@ -41,7 +41,7 @@ async def create_ticket(ticket: TicketCreate, db: AsyncSession = Depends(get_db)
         return {"message": "Ticket created successfully"}
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to create ticket")
 
 
 @router.post("/validate/{ticket_id}", response_model=dict)
@@ -53,7 +53,7 @@ async def validate_ticket(ticket_id: int, ticket: TicketValidate, db: AsyncSessi
 
     # Check if the ticket is already validated.
     if ticket_to_validate.validated:
-        raise HTTPException(status_code=400, detail="Ticket is already validated")
+        raise HTTPException(status_code=409, detail="Ticket is already validated")
 
     # Check if validator exists
     if not await user_exists(db, ticket.validator_id):
@@ -68,7 +68,7 @@ async def validate_ticket(ticket_id: int, ticket: TicketValidate, db: AsyncSessi
         return {"message": "Ticket validated successfully"}
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to validate ticket")
 
 
 @router.delete("/validate/{ticket_id}", response_model=dict)
@@ -83,7 +83,7 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
 
     # Check if the ticket is validated
     if not ticket_to_delete.validated:
-        raise HTTPException(status_code=400, detail="Cannot delete a ticket that is not validated")
+        raise HTTPException(status_code=409, detail="Cannot invalidate a ticket that is not validated")
 
     # Delete the ticket
     await db.delete(ticket_to_delete)
@@ -95,9 +95,12 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
         raise HTTPException(status_code=500, detail=f"Failed to delete the ticket: {str(e)}")
 
 
-async def ticket_exists(db: AsyncSession, ticket_id: int) -> Ticket:
+async def ticket_exists(db: AsyncSession, ticket_id: int) -> list[TicketResponse]:
     # Build the filters dictionary
     filters = {
         "ticket_id": ticket_id,
     }
-    return await fetch_tickets(db, filters=filters)
+
+    # Get all the tickets and only return the first one
+    tickets = await fetch_tickets(db, filters=filters)
+    return tickets[0] if tickets else None
