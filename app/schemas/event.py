@@ -12,10 +12,8 @@ class EventSchema(BaseModel):
     event_date: datetime
     created_at: datetime
 
-    @validator('event_date', pre=True)
-    def strip_timezone(cls, value):
-        if isinstance(value, str):
-            value = datetime.fromisoformat(value.replace('Z', '+00:00'))
-        if value.tzinfo is not None:
-            value = value.astimezone(tz=None).replace(tzinfo=None)
-        return value
+    class Config:
+        # Use a custom JSON encoder to ensure datetime fields are in ISO format with a 'Z'
+        json_encoders = {
+            datetime: lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ") if dt else None
+        }

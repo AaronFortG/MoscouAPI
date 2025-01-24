@@ -1,10 +1,11 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ticket import Ticket
 from app.routes.event import event_exists
-from app.schemas.ticket import TicketCreate, TicketValidate
+from app.schemas.ticket import TicketCreate, TicketValidate, TicketResponse
 from app.database import get_db
-from sqlalchemy import literal
 from sqlalchemy.sql import func
 from sqlalchemy.sql import text
 from sqlalchemy.future import select
@@ -13,10 +14,20 @@ from app.routes.user import user_exists
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_model=List[TicketResponse])
 async def get_tickets(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(text("SELECT * FROM tickets"))
-    return result.mappings().all()
+    result = await db.execute(text("""
+            SELECT 
+                tickets.*, 
+                users.name AS user_name, 
+                validators.name AS validator_name
+            FROM tickets
+            JOIN users ON tickets.user_id = users.firebase_uid
+            LEFT JOIN users AS validators ON tickets.validator_id = validators.firebase_uid
+        """))
+    tickets = result.mappings().all()
+
+    return [TicketResponse(**ticket) for ticket in tickets]
 
 
 @router.post("/", response_model=dict)
