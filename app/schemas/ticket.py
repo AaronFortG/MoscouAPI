@@ -18,6 +18,7 @@ class TicketResponse(BaseModel):
     user_id: str
     user_name: str
     event_id: int
+    event_name: str
     qr_code: str
     validated: bool
     validator_id: Optional[str] = None

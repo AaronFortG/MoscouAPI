@@ -9,9 +9,11 @@ async def fetch_tickets(db: AsyncSession, filters: Dict) -> List[TicketResponse]
         SELECT
             tickets.*,
             users.name AS user_name,
-            validators.name AS validator_name
+            validators.name AS validator_name,
+            events.name AS event_name
         FROM tickets
         JOIN users ON tickets.user_id = users.firebase_uid
+        JOIN events ON tickets.event_id = events.event_id
         LEFT JOIN users AS validators ON tickets.validator_id = validators.firebase_uid
     """
 
