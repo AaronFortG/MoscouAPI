@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,24 +10,14 @@ from sqlalchemy.sql import func
 from sqlalchemy.sql import text
 from sqlalchemy.future import select
 from app.routes.user import user_exists
+from app.utils.ticket_utils import fetch_tickets
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List[TicketResponse])
 async def get_tickets(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(text("""
-            SELECT 
-                tickets.*, 
-                users.name AS user_name, 
-                validators.name AS validator_name
-            FROM tickets
-            JOIN users ON tickets.user_id = users.firebase_uid
-            LEFT JOIN users AS validators ON tickets.validator_id = validators.firebase_uid
-        """))
-    tickets = result.mappings().all()
-
-    return [TicketResponse(**ticket) for ticket in tickets]
+    return await fetch_tickets(db, {})
 
 
 @router.post("/", response_model=dict)
@@ -106,5 +96,8 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
 
 
 async def ticket_exists(db: AsyncSession, ticket_id: int) -> Ticket:
-    result = await db.execute(select(Ticket).where(Ticket.ticket_id == ticket_id))
-    return result.scalar_one_or_none()
+    # Build the filters dictionary
+    filters = {
+        "ticket_id": ticket_id,
+    }
+    return await fetch_tickets(db, filters=filters)
