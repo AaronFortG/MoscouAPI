@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ticket import Ticket
 from app.routes.event import event_exists
@@ -14,8 +14,13 @@ router = APIRouter()
 
 
 @router.get("/", response_model=List[TicketResponse])
-async def get_tickets(db: AsyncSession = Depends(get_db)):
-    return await fetch_tickets(db, {})
+async def get_tickets(
+    db: AsyncSession = Depends(get_db),
+    order_by: Optional[List[str]] = Query(default=None),  # List of fields to order by
+    order_directions: Optional[List[str]] = Query(default=None)  # Corresponding directions: asc or desc
+):
+    orders = list(zip(order_by or [], (direction.lower() for direction in (order_directions or []))))
+    return await fetch_tickets(db, {}, orders)
 
 
 @router.post("/", response_model=dict)

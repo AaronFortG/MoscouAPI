@@ -1,10 +1,10 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 from app.schemas.ticket import TicketResponse
 
 
-async def fetch_tickets(db: AsyncSession, filters: Dict) -> List[TicketResponse]:
+async def fetch_tickets(db: AsyncSession, filters: Dict, orders: List[Tuple[str, str]]) -> List[TicketResponse]:
     query = """
         SELECT
             tickets.*,
@@ -30,6 +30,17 @@ async def fetch_tickets(db: AsyncSession, filters: Dict) -> List[TicketResponse]
     # Add WHERE clause if there are conditions
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
+
+    # Add ORDER BY clause for multiple ordering fields
+    if orders:
+        valid_fields = {"purchased_at", "validated_at", "validated", "event_id", "user_id", "validator_id", "ticket_id"}
+        order_clauses = []
+        for field, direction in orders:
+            if field in valid_fields:
+                order_direction = "DESC" if direction == "desc" else "ASC"
+                order_clauses.append(f"{field} {order_direction}")
+        if order_clauses:
+            query += " ORDER BY " + ", ".join(order_clauses)
 
     # Execute the query with bind parameters
     result = await db.execute(text(query), filters)
