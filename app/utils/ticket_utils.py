@@ -33,7 +33,7 @@ async def fetch_tickets(db: AsyncSession, filters: Dict, orders: List[Tuple[str,
 
     # Add ORDER BY clause for multiple ordering fields
     if orders:
-        valid_fields = {"purchased_at", "validated_at", "validated", "event_id", "user_id", "validator_id", "ticket_id"}
+        valid_fields = {"purchased_at", "validated_date", "validated", "event_id", "user_id", "validator_id", "ticket_id"}
         order_clauses = []
         for field, direction in orders:
             if field in valid_fields:
