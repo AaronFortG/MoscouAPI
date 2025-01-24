@@ -4,11 +4,13 @@ from typing import Optional
 
 
 class EventSchema(BaseModel):
+    event_id: Optional[int] = None
     name: str
     price: float
     description: Optional[str] = None
     image_url: Optional[str] = None
     event_date: datetime
+    created_at: datetime
 
     @validator('event_date', pre=True)
     def strip_timezone(cls, value):

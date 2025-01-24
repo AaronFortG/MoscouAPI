@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, literal
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.event import EventModel
-from app.schemas.eventschema import EventSchema
+from app.schemas.event import EventSchema
 from app.database import get_db
 from sqlalchemy.sql import text
 
@@ -35,6 +35,6 @@ async def create_event(event: EventSchema, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-async def event_exists(db: AsyncSession, event_id: int) -> EventSchema:
+async def event_exists(db: AsyncSession, event_id: int) -> EventModel | None:
     result = await db.execute(select(EventModel).where(EventModel.event_id == event_id))
     return result.scalar_one_or_none()
