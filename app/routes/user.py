@@ -21,7 +21,7 @@ async def get_users(db: AsyncSession = Depends(get_db)):
 async def create_user(user: UserResponse, db: AsyncSession = Depends(get_db)):
     # Check if user already exists
     if await user_exists(db, user.firebase_uid):
-        raise HTTPException(status_code=400, detail="User already exists.")
+        raise HTTPException(status_code=409, detail="User already exists.")
 
     # Create new user
     new_user = User(firebase_uid=user.firebase_uid, name=user.name, email=user.email)
