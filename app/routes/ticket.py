@@ -16,11 +16,22 @@ router = APIRouter()
 @router.get("/", response_model=List[TicketResponse])
 async def get_tickets(
     db: AsyncSession = Depends(get_db),
+    event_id: Optional[int] = Query(default=None),  # Filter by event ID
+    user_id: Optional[str] = Query(default=None),  # Filter by user ID
+    validator_id: Optional[str] = Query(default=None),  # Filter by validator ID
+    validated: Optional[bool] = Query(default=None),  # Filter by validated status
     order_by: Optional[List[str]] = Query(default=None),  # List of fields to order by
     order_directions: Optional[List[str]] = Query(default=None)  # Corresponding directions: asc or desc
 ):
+    # Build filters dictionary
+    filters = {
+        "event_id": event_id,
+        "user_id": user_id,
+        "validator_id": validator_id,
+        "validated": validated,
+    }
     orders = list(zip(order_by or [], (direction.lower() for direction in (order_directions or []))))
-    return await fetch_tickets(db, {}, orders)
+    return await fetch_tickets(db, filters, orders)
 
 
 @router.post("/", response_model=dict)
