@@ -59,7 +59,7 @@ async def create_ticket(ticket: TicketCreate, db: AsyncSession = Depends(get_db)
         raise HTTPException(status_code=500, detail="Failed to create ticket")
 
 
-@router.post("/validate/{ticket_id}", response_model=dict)
+@router.post("/validate/{ticket_id}", response_model=TicketResponse)
 async def validate_ticket(ticket_id: int, ticket: TicketValidate, db: AsyncSession = Depends(get_db)):
     # Check if the ticket exists
     ticket_to_validate = await ticket_exists(db, ticket_id)
@@ -80,13 +80,14 @@ async def validate_ticket(ticket_id: int, ticket: TicketValidate, db: AsyncSessi
 
     try:
         await db.commit()
-        return {"message": "Ticket validated successfully"}
+        result = await fetch_tickets_scheme(db, {"ticket_id": ticket_id}, [])
+        return result[0] if result else None
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to validate ticket")
 
 
-@router.delete("/validate/{ticket_id}", response_model=dict)
+@router.delete("/validate/{ticket_id}", response_model=TicketResponse)
 async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get_db)):
     """
     Deletes a validated ticket by ticket_id if it is validated.
@@ -107,7 +108,8 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
 
     try:
         await db.commit()
-        return {"message": f"Ticket with ID {ticket_id} has been unvalidated successfully"}
+        result = await fetch_tickets_scheme(db, {"ticket_id": ticket_id}, [])
+        return result[0] if result else None
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete the ticket: {str(e)}")
