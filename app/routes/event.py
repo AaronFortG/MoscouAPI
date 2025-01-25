@@ -9,7 +9,7 @@ from app.database import get_db
 from sqlalchemy.sql import text
 
 from app.schemas.ticket import TicketResponse
-from app.utils.ticket_utils import fetch_tickets
+from app.utils.ticket_utils import fetch_tickets_scheme
 
 router = APIRouter()
 
@@ -44,7 +44,7 @@ async def get_event_tickets(event_id: int, db: AsyncSession = Depends(get_db)):
     filters = {
         "event_id": event_id,
     }
-    return await fetch_tickets(db, filters, [])
+    return await fetch_tickets_scheme(db, filters, [])
 
 async def event_exists(db: AsyncSession, event_id: int) -> EventModel | None:
     result = await db.execute(select(EventModel).where(EventModel.event_id == event_id))

@@ -1,14 +1,15 @@
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.ticket import Ticket
+from app.models.ticketmodel import TicketModel
 from app.routes.event import event_exists
 from app.schemas.ticket import TicketCreate, TicketValidate, TicketResponse
 from app.database import get_db
 from sqlalchemy.sql import func
 from app.routes.user import user_exists
-from app.utils.ticket_utils import fetch_tickets
+from app.utils.ticket_utils import fetch_tickets_scheme
 
 router = APIRouter()
 
@@ -31,7 +32,7 @@ async def get_tickets(
         "validated": validated,
     }
     orders = list(zip(order_by or [], (direction.lower() for direction in (order_directions or []))))
-    return await fetch_tickets(db, filters, orders)
+    return await fetch_tickets_scheme(db, filters, orders)
 
 
 @router.post("/", response_model=dict)
@@ -44,7 +45,7 @@ async def create_ticket(ticket: TicketCreate, db: AsyncSession = Depends(get_db)
     if not await event_exists(db, ticket.event_id):
         raise HTTPException(status_code=404, detail="Event not found")
 
-    new_ticket = Ticket(
+    new_ticket = TicketModel(
         user_id=ticket.user_id,
         event_id=ticket.event_id,
         qr_code=ticket.qr_code
@@ -109,12 +110,7 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
         raise HTTPException(status_code=500, detail=f"Failed to delete the ticket: {str(e)}")
 
 
-async def ticket_exists(db: AsyncSession, ticket_id: int) -> TicketResponse | None:
-    # Build the filters dictionary
-    filters = {
-        "ticket_id": ticket_id,
-    }
-
-    # Get all the tickets and only return the first one
-    tickets = await fetch_tickets(db, filters=filters, orders=[])
-    return tickets[0] if tickets else None
+# Query the ticket on the database
+async def ticket_exists(db: AsyncSession, ticket_id: int) -> TicketModel | None:
+    result = await db.execute(select(TicketModel).where(TicketModel.ticket_id == ticket_id))
+    return result.scalar_one_or_none()

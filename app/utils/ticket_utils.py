@@ -4,7 +4,8 @@ from sqlalchemy.sql import text
 from app.schemas.ticket import TicketResponse
 
 
-async def fetch_tickets(db: AsyncSession, filters: Dict, orders: List[Tuple[str, str]]) -> List[TicketResponse]:
+# Query the tickets from/for the requests (JSON)
+async def fetch_tickets_scheme(db: AsyncSession, filters: Dict, orders: List[Tuple[str, str]]) -> List[TicketResponse]:
     query = """
         SELECT
             tickets.*,
