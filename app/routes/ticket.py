@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, null
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ticket import TicketModel
 from app.routes.event import event_exists
@@ -100,11 +100,14 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
     if not ticket_to_delete.validated:
         raise HTTPException(status_code=409, detail="Cannot invalidate a ticket that is not validated")
 
-    # Delete the ticket
-    await db.delete(ticket_to_delete)
+    # Set the ticket as not validated
+    ticket_to_delete.validator_id = null
+    ticket_to_delete.validated = False
+    ticket_to_delete.validated_date = null
+
     try:
         await db.commit()
-        return {"message": f"Validated ticket with ID {ticket_id} has been deleted successfully"}
+        return {"message": f"Ticket with ID {ticket_id} has been unvalidated successfully"}
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete the ticket: {str(e)}")

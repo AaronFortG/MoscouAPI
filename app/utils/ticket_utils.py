@@ -32,6 +32,10 @@ async def fetch_tickets_scheme(db: AsyncSession, filters: Dict, orders: List[Tup
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
 
+    # Ensure default sorting by purchased_at (newest tickets appear on top) if no explicit ordering is provided
+    if not orders:
+        orders = [("purchased_at", "desc")]
+
     # Add ORDER BY clause for multiple ordering fields
     if orders:
         valid_fields = {"purchased_at", "validated_date", "validated", "event_id", "user_id", "validator_id", "ticket_id"}
@@ -40,6 +44,7 @@ async def fetch_tickets_scheme(db: AsyncSession, filters: Dict, orders: List[Tup
             if field in valid_fields:
                 order_direction = "DESC" if direction == "desc" else "ASC"
                 order_clauses.append(f"{field} {order_direction}")
+
         if order_clauses:
             query += " ORDER BY " + ", ".join(order_clauses)
 
