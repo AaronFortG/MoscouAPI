@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.ticketmodel import TicketModel
+from app.models.ticket import TicketModel
 from app.routes.event import event_exists
 from app.schemas.ticket import TicketCreate, TicketValidate, TicketResponse
 from app.database import get_db
