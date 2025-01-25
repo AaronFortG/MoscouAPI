@@ -116,5 +116,5 @@ async def ticket_exists(db: AsyncSession, ticket_id: int) -> TicketResponse | No
     }
 
     # Get all the tickets and only return the first one
-    tickets = await fetch_tickets(db, filters=filters)
+    tickets = await fetch_tickets(db, filters=filters, orders=[])
     return tickets[0] if tickets else None
