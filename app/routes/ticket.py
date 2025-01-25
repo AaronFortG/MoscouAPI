@@ -1,7 +1,7 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, null
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ticket import TicketModel
 from app.routes.event import event_exists
@@ -101,9 +101,9 @@ async def delete_validated_ticket(ticket_id: int, db: AsyncSession = Depends(get
         raise HTTPException(status_code=409, detail="Cannot invalidate a ticket that is not validated")
 
     # Set the ticket as not validated
-    ticket_to_delete.validator_id = null
-    ticket_to_delete.validated = False
-    ticket_to_delete.validated_date = null
+    ticket_to_delete.validator_id = None  # Set validator_id to NULL
+    ticket_to_delete.validated = False  # Mark ticket as not validated
+    ticket_to_delete.validated_date = None  # Set validated_date to NULL
 
     try:
         await db.commit()
