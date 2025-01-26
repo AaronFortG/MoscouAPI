@@ -16,6 +16,13 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     result = await db.execute(text("SELECT * FROM users"))
     return result.mappings().all()
 
+@router.get("/{firebase_uid}/", response_model=UserResponse)
+async def get_user_by_id(firebase_uid: str, db: AsyncSession = Depends(get_db)):
+    user = await user_exists(db, firebase_uid)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.post("/")
 async def create_user(user: UserResponse, db: AsyncSession = Depends(get_db)):
