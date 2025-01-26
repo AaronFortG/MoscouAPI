@@ -45,15 +45,23 @@ async def create_ticket(ticket: TicketCreate, db: AsyncSession = Depends(get_db)
     if not await event_exists(db, ticket.event_id):
         raise HTTPException(status_code=404, detail="Event not found")
 
+     # Create the ticket initially without the qr_code
     new_ticket = TicketModel(
         user_id=ticket.user_id,
-        event_id=ticket.event_id,
-        qr_code=ticket.qr_code
+        event_id=ticket.event_id
     )
     db.add(new_ticket)
+
     try:
-        await db.commit()
-        return {"message": "Ticket created successfully"}
+        await db.commit()  # Commit the ticket to generate its ID
+        await db.refresh(new_ticket)  # Refresh the ticket object to get the generated fields (like id)
+
+        # Update the qr_code field with the desired value
+        new_ticket.qr_code = f"ELMOSCOU_IDR-{new_ticket.ticket_id}"
+        db.add(new_ticket)  # Mark as updated
+
+        await db.commit()  # Commit the changes
+        return {"message": "Ticket created successfully with QR code " + new_ticket.qr_code}
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create ticket")
